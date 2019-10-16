@@ -6,3 +6,5 @@ def wallis_product(n):
 
     return result * 2
 
+
+print(format(wallis_product(10), '.10f'))
