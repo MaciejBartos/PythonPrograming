@@ -1,6 +1,9 @@
 import collections
 import math
 
+
+#podzielic na osobne plki przed wgraniem!
+
 def wallis_product(n):
     result = 1
     for x in range(1, n):
