@@ -1,5 +1,7 @@
 import random
 import math
+import json
+import csv
 
 
 class Sheep:
@@ -7,10 +9,13 @@ class Sheep:
     x = None
     y = None
 
-    def __init__(self, init_pos_limit, id):
-        self.x = random.uniform(-init_pos_limit, init_pos_limit)
-        self.y = random.uniform(-init_pos_limit, init_pos_limit)
+    def __init__(self, id, x, y):
         self.id = id
+        self.x = x
+        self.y = y
+
+    def get_position(self):
+        return self.x, self.y
 
 
 class Wolf:
@@ -21,6 +26,9 @@ class Wolf:
         self.x = start_position
         self.y = start_position
 
+    def get_position(self):
+        return self.x, self.y
+
 
 class WolfSheepGame:
     __number_of_turns = None
@@ -29,7 +37,9 @@ class WolfSheepGame:
     __sheep_move_dist = None
     __wolf_move_dist = None
     __sheep_position = list()
-    __wolf_position = list()
+    __wolf_position = None
+    __list_for_json = list()
+    __list_for_csv = list()
 
     def __init__(self, number_of_turns, number_of_sheeps, init_pos_limit, sheep_move_dist, wolf_move_dist):
         self.__number_of_turns = number_of_turns
@@ -40,7 +50,9 @@ class WolfSheepGame:
         self.__wolf_position = Wolf(0)
 
         for sheep_number in range(1, number_of_sheeps + 1):
-            self.__sheep_position.append(Sheep(self.__init_pos_limit, sheep_number))
+            x = random.uniform(-init_pos_limit, init_pos_limit)
+            y = random.uniform(-init_pos_limit, init_pos_limit)
+            self.__sheep_position.append(Sheep(sheep_number, x, y))
 
     def count_wolf_to_sheep_distance(self, sheep_position_x, sheep_position_y):
         x_square_distance = (sheep_position_x - self.__wolf_position.x) ** 2
@@ -57,7 +69,7 @@ class WolfSheepGame:
                 closest_sheep = sheep
         return closest_sheep
 
-    def move_sheeps(self):
+    def move_sheep(self):
         for sheep in self.__sheep_position:
             x_direction = random.randint(0, 1)
             minus_or_plus = random.randint(0, 1)
@@ -92,16 +104,48 @@ class WolfSheepGame:
             self.eat_sheep(sheep)
 
     def make_turn(self):
-        self.move_sheeps()
+        self.move_sheep()
         self.wolf_turn(self.select_closest_sheep())
 
     def start_game(self):
         for turn in range(1, self.__number_of_turns + 1):
-            self.print_current_status(turn)
             self.make_turn()
+            self.print_current_status(turn)
+            self.convert_current_status_to_list(turn)
             if len(self.__sheep_position) == 0:
                 break
         self.print_end_game_status()
+        self.parse_to_json_file()
+        self.parse_to_csv_file()
+
+    def convert_current_status_to_list(self, turn):
+        self.__list_for_csv.append((turn, len(self.__sheep_position)))
+
+        status_dictionary = {"round_no": turn, "wolf_pos": (self.__wolf_position.x, self.__wolf_position.y)}
+        sheep_list = list()
+        list_pos = 0
+        for sheep_id in range(1, self.__number_of_sheep + 1):
+            if list_pos < len(self.__sheep_position):
+                if self.__sheep_position[list_pos].id == sheep_id:
+                    sheep_list.append(self.__sheep_position[list_pos].get_position())
+                    list_pos += 1
+                else:
+                    sheep_list.append((None, None))
+            else:
+                sheep_list.append((None, None))
+        status_dictionary["sheep_pos"] = sheep_list
+
+        self.__list_for_json.append(status_dictionary)
+
+    def parse_to_csv_file(self):
+        with open("alive.csv", "w", newline="") as csv_file:
+            writer = csv.writer(csv_file, delimiter=" ", quoting=csv.QUOTE_NONE)
+            for i in self.__list_for_csv:
+                writer.writerow(i)
+
+    def parse_to_json_file(self):
+        with open("pos.json", "w") as json_file:
+            json.dump(self.__list_for_json, json_file, indent=1)
 
     def print_eaten_sheep(self, sheep):
         print()
