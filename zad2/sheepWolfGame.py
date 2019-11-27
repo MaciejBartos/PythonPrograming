@@ -72,12 +72,12 @@ class WolfSheepGame:
     def move_sheep(self):
         for sheep in self.__sheep_position:
             x_direction = random.randint(0, 1)
-            minus_or_plus = random.randint(0, 1)
+            minus_or_plus = random.choice([-1, 1])
 
             if x_direction:
-                sheep.x += (-1) * minus_or_plus + self.__sheep_move_dist
+                sheep.x += (minus_or_plus * self.__sheep_move_dist)
             else:
-                sheep.y += (-1) * minus_or_plus + self.__sheep_move_dist
+                sheep.y += (minus_or_plus * self.__sheep_move_dist)
 
     def check_if_wolf_in_range(self, sheep):
         if self.__wolf_move_dist >= self.count_wolf_to_sheep_distance(sheep.x, sheep.y):
