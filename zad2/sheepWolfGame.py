@@ -67,11 +67,12 @@ class WolfSheepGame:
             distance = self.count_wolf_to_sheep_distance(sheep.x, sheep.y)
             if distance < closest_sheep_distance:
                 closest_sheep = sheep
+                closest_sheep_distance = distance
         return closest_sheep
 
     def move_sheep(self):
         for sheep in self.__sheep_position:
-            x_direction = random.randint(0, 1)
+            x_direction = random.choice([True, False])
             minus_or_plus = random.choice([-1, 1])
 
             if x_direction:
@@ -94,8 +95,8 @@ class WolfSheepGame:
         y = sheep.y
         distance = self.count_wolf_to_sheep_distance(x, y)
         union_vector = ((x - self.__wolf_position.x) / distance, (y - self.__wolf_position.y) / distance)
-        self.__wolf_position.x += union_vector[0] * self.__wolf_move_dist
-        self.__wolf_position.y += union_vector[1] * self.__wolf_move_dist
+        self.__wolf_position.x += (union_vector[0] * self.__wolf_move_dist)
+        self.__wolf_position.y += (union_vector[1] * self.__wolf_move_dist)
 
     def wolf_turn(self, sheep):
         if not self.check_if_wolf_in_range(sheep):
@@ -130,9 +131,9 @@ class WolfSheepGame:
                     sheep_list.append(self.__sheep_position[list_pos].get_position())
                     list_pos += 1
                 else:
-                    sheep_list.append((None, None))
+                    sheep_list.append(None)
             else:
-                sheep_list.append((None, None))
+                sheep_list.append(None)
         status_dictionary["sheep_pos"] = sheep_list
 
         self.__list_for_json.append(status_dictionary)
@@ -156,6 +157,7 @@ class WolfSheepGame:
         print("Tura " + str(turn))
         print("Wilk x: " + str(self.__wolf_position.x))
         print("Wilk y: " + str(self.__wolf_position.y))
+        print("Liczba żywych owiec: " + str(len(self.__sheep_position)))
         print()
 
     def print_end_game_status(self):
@@ -165,5 +167,8 @@ class WolfSheepGame:
             print("Koniec gry, Owce przezyly!")
 
 
-WolfSheepGame(500, 10, 10.0, 0.5, 1.0).start_game()
+if __name__ == "__main__":
+    WolfSheepGame(50, 15, 10.0, 0.5, 1.0).start_game()
+
+
 
